@@ -8,7 +8,7 @@ class MXM:
         pass # No API key needed for the hybrid approach
 
     def _sync_get_verified_link(self, track_name, artist_name):
-        query = f'"{track_name}" "{artist_name}" site:musixmatch.com/lyrics/'
+        query = f'{track_name} {artist_name} site:musixmatch.com/lyrics/'
         try:
             with DDGS() as ddgs:
                 results = list(ddgs.text(query, max_results=1))
@@ -62,6 +62,7 @@ class MXM:
                 verified = predicted
             else:
                 verified = await self.get_verified_link(track_name, artist_name)
+                predicted = None # explicitly set to None if it's a 404 so UI knows
             
             # Format the output for the templates
             return {

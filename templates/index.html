@@ -101,7 +101,11 @@
                 <p class="card-text">ISRC: {{ track.isrc }}</p>
                 <p class="card-text">
                   Predicted Link:
+                  {% if track.predicted_link %}
                   <a href="{{ track.predicted_link }}" class="card-link" target="_blank">Musixmatch</a>
+                  {% else %}
+                  <span style="color: #f44336;">Invalid Page</span>
+                  {% endif %}
                 </p>
                 <p class="card-text">
                   {% if track.verified_link %}
