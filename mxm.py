@@ -1,5 +1,6 @@
 import re
 import asyncio
+import requests
 from duckduckgo_search import DDGS
 
 class MXM:
@@ -29,6 +30,17 @@ class MXM:
         text = re.sub(r'[-\s]+', '-', text).strip('-')
         return text
 
+    def _sync_check_link(self, url):
+        try:
+            r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}, timeout=10)
+            return r.status_code == 200
+        except Exception as e:
+            print(f"Error checking link {url}: {e}")
+            return False
+
+    async def check_link(self, url):
+        return await asyncio.to_thread(self._sync_check_link, url)
+
     def get_predicted_link(self, track_name, artist_name):
         artist_slug = self.format_slug(artist_name)
         track_slug = self.format_slug(track_name)
@@ -43,7 +55,13 @@ class MXM:
             album_name = t["album"].get("name", "") if t.get("album") else ""
             
             predicted = self.get_predicted_link(track_name, artist_name)
-            verified = await self.get_verified_link(track_name, artist_name)
+            
+            # Check if predicted link actually loads
+            is_valid = await self.check_link(predicted)
+            if is_valid:
+                verified = predicted
+            else:
+                verified = await self.get_verified_link(track_name, artist_name)
             
             # Format the output for the templates
             return {
