@@ -24,8 +24,6 @@ class MXM:
         return await asyncio.to_thread(self._sync_get_verified_link, track_name, artist_name)
 
     def format_slug(self, text):
-        # Remove anything in parenthesis (like "(feat. X)") since MXM vanity URLs usually omit them
-        text = re.sub(r'\(.*?\)', '', text)
         # Remove special characters, replace spaces with hyphens
         text = re.sub(r'[^\w\s-]', '', text).strip()
         text = re.sub(r'[-\s]+', '-', text).strip('-')
@@ -41,7 +39,7 @@ class MXM:
         if isinstance(sp_track, dict) and sp_track.get("track"):
             t = sp_track["track"]
             track_name = t.get("name", "")
-            artist_name = t["artists"][0].get("name", "") if t.get("artists") else ""
+            artist_name = ", ".join([a.get("name", "") for a in t.get("artists", [])]) if t.get("artists") else ""
             album_name = t["album"].get("name", "") if t.get("album") else ""
             
             predicted = self.get_predicted_link(track_name, artist_name)
